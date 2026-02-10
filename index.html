@@ -1,1 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embeddable FAB</title>
+    <style>
+        /* Styles for the FAB container and button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            cursor: pointer;
+            z-index: 999;
+        }
 
+        .fab {
+            background-color: #007bff;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .fab:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles for the content to be shown/hidden */
+        .fab-content {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 300px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 20px;
+            font-family: sans-serif;
+            z-index: 998;
+        }
+
+        /* A class to show the content */
+        .fab-content.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The Floating Action Button -->
+    <div class="fab-container" id="fab-container">
+        <button class="fab" id="fab-button">+</button>
+    </div>
+
+    <!-- The content that the FAB will toggle -->
+    <div class="fab-content" id="fab-content">
+        <h2>Hello from the FAB!</h2>
+        <p>This is the content that appears when you click the button. You can put anything here, like a form, chat window, or helpful links.</p>
+    </div>
+
+    <script>
+        // JavaScript to make the FAB interactive
+        document.addEventListener('DOMContentLoaded', () => {
+            const fabButton = document.getElementById('fab-button');
+            const fabContent = document.getElementById('fab-content');
+
+            fabButton.addEventListener('click', () => {
+                // Toggle the 'show' class on the content
+                fabContent.classList.toggle('show');
+            });
+        });
+    </script>
+
+</body>
+</html>

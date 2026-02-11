@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .chat-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-history {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .chat-input {
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+        }
+        .chat-input input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+        }
+        .chat-input input[type="file"] {
+            display: none;
+        }
+        .chat-input button {
+            margin-left: 10px;
+        }
+        .hamburger-menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+        }
+        .sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#" onclick="showSettings()">Settings</a>
+        <a href="#" onclick="showConfig()">Configuration</a>
+        <a href="#">Admin</a>
+        <a href="#">Chat History</a>
+    </div>
+
+    <div id="main">
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <span>Chatbot</span>
+        </div>
+        <div class="chat-history" id="chat-history"></div>
+        <div class="chat-input">
+            <input type="text" id="chat-input-text" placeholder="Type a message...">
+            <input type="file" id="media-input" accept="image/*,video/*">
+            <button id="attach-button">Attach</button>
+            <button id="record-button">Record</button>
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <div id="settings-page" style="display:none;">
+        <h2>Settings</h2>
+        <form>
+            Name of Chatbot: <input type="text"><br>
+            Chatbot Task to do: <input type="text"><br>
+            End User Email Address: <input type="email"><br>
+            Supplementary Recovery Email Address: <input type="email"><br>
+            Phone Number: <input type="tel"><br>
+            Recovery Generated Key: <input type="text"><br>
+        </form>
+    </div>
+
+    <div id="config-page" style="display:none;">
+        <h2>Configuration</h2>
+        <form>
+            Confidence: <input type="range" min="0" max="1" step="0.1"><br>
+            Temperature: <input type="range" min="0" max="1" step="0.1"><br>
+            top_p: <input type="range" min="0" max="1" step="0.1"><br>
+            top_k: <input type="number" min="1"><br>
+            max_output_tokens: <input type="number" min="1"><br>
+        </form>
+    </div>
+
+
+    <script>
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+
+        function showSettings() {
+            document.getElementById("chat-container").style.display = "none";
+            document.getElementById("config-page").style.display = "none";
+            document.getElementById("settings-page").style.display = "block";
+            closeNav();
+        }
+
+        function showConfig() {
+            document.getElementById("chat-container").style.display = "none";
+            document.getElementById("settings-page").style.display = "none";
+            document.getElementById("config-page").style.display = "block";
+            closeNav();
+        }
+
+        const sendButton = document.getElementById('send-button');
+        const recordButton = document.getElementById('record-button');
+        const attachButton = document.getElementById('attach-button');
+        const mediaInput = document.getElementById('media-input');
+        const chatInput = document.getElementById('chat-input-text');
+        const chatHistory = document.getElementById('chat-history');
+
+        let isRecording = false;
+        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            chatInput.value = transcript;
+        };
+
+        recordButton.addEventListener('click', () => {
+            if (isRecording) {
+                recognition.stop();
+                recordButton.textContent = 'Record';
+                isRecording = false;
+            } else {
+                recognition.start();
+                recordButton.textContent = 'Stop';
+                isRecording = true;
+            }
+        });
+
+        attachButton.addEventListener('click', () => {
+            mediaInput.click();
+        });
+
+        sendButton.addEventListener('click', async () => {
+            const message = chatInput.value;
+            const mediaFile = mediaInput.files[0];
+
+            if (message) {
+                addMessage('user', message);
+                chatInput.value = '';
+            }
+
+            if (mediaFile) {
+                const formData = new FormData();
+                formData.append('media', mediaFile);
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                addMessage('user', data.filePath, mediaFile.type.startsWith('image') ? 'image' : 'video');
+            }
+
+            if(message && !mediaFile) {
+                 const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                addMessage('bot', data.message);
+            }
+        });
+
+        function addMessage(sender, content, type = 'text') {
+            const messageElement = document.createElement('div');
+
+            if (type === 'text') {
+                messageElement.textContent = content;
+            } else if (type === 'image') {
+                const image = document.createElement('img');
+                image.src = content;
+                image.style.maxWidth = '200px';
+                messageElement.appendChild(image);
+            } else if (type === 'video') {
+                const video = document.createElement('video');
+                video.src = content;
+                video.style.maxWidth = '200px';
+                video.controls = true;
+                messageElement.appendChild(video);
+            }
+
+            if (sender === 'bot') {
+                const speakButton = document.createElement('button');
+                speakButton.textContent = 'Speak';
+                speakButton.addEventListener('click', () => {
+                    const utterance = new SpeechSynthesisUtterance(content);
+                    speechSynthesis.speak(utterance);
+                });
+                messageElement.appendChild(speakButton);
+            }
+            chatHistory.appendChild(messageElement);
+        }
+    </script>
+
+</body>
+</html>

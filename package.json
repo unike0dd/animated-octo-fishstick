@@ -1,6 +1,17 @@
 {
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "local-ssl-proxy": "^2.0.5"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "start:ssl": "local-ssl-proxy --source 3001 --target 3000 --cert localhost.pem --key localhost.key",
+    "prepare": "husky install"
   }
 }

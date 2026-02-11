@@ -7,15 +7,33 @@
     <style>
         body {
             font-family: sans-serif;
+            transition: background-color 0.5s;
         }
-        .chat-container {
+        .chat-container, .auth-container {
             position: fixed;
             bottom: 30px;
             right: 30px;
             width: 400px;
-            height: 600px;
             border: 1px solid #ccc;
             border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .auth-container {
+            padding: 20px;
+            z-index: 10;
+        }
+        .auth-container h2 {
+            margin-top: 0;
+        }
+        .auth-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .chat-container {
+            height: 600px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -38,66 +56,37 @@
             display: flex;
             align-items: center;
         }
-        .chat-input input[type="text"] {
-            flex-grow: 1;
-            border: none;
-            outline: none;
-        }
-        .chat-input input[type="file"] {
-            display: none;
-        }
-        .chat-input button {
-            margin-left: 10px;
-        }
-        .hamburger-menu {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            cursor: pointer;
-        }
+        .chat-input input[type="text"] { flex-grow: 1; border: none; outline: none; }
+        .chat-input input[type="file"] { display: none; }
+        .chat-input button { margin-left: 10px; }
+        .hamburger-menu { position: fixed; top: 10px; left: 10px; cursor: pointer; }
         .sidenav {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 1;
-            top: 0;
-            left: 0;
-            background-color: #111;
-            overflow-x: hidden;
-            transition: 0.5s;
-            padding-top: 60px;
+            height: 100%; width: 0; position: fixed; z-index: 1;
+            top: 0; left: 0; background-color: #111;
+            overflow-x: hidden; transition: 0.5s; padding-top: 60px;
         }
         .sidenav a {
-            padding: 8px 8px 8px 32px;
-            text-decoration: none;
-            font-size: 25px;
-            color: #818181;
-            display: block;
-            transition: 0.3s;
+            padding: 8px 8px 8px 32px; text-decoration: none; font-size: 25px;
+            color: #818181; display: block; transition: 0.3s;
         }
-        .sidenav a:hover {
-            color: #f1f1f1;
-        }
+        .sidenav a:hover { color: #f1f1f1; }
         .sidenav .closebtn {
-            position: absolute;
-            top: 0;
-            right: 25px;
-            font-size: 36px;
-            margin-left: 50px;
+            position: absolute; top: 0; right: 25px;
+            font-size: 36px; margin-left: 50px;
         }
-        #main {
-            transition: margin-left .5s;
-            padding: 16px;
-        }
+        #main { transition: margin-left .5s; padding: 16px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div id="mySidenav" class="sidenav">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#" id="login-nav-link" onclick="showLogin()">Login</a>
+        <a href="#" id="logout-nav-link" class="hidden" onclick="logout()">Logout</a>
+        <a href="#" id="admin-nav-link" class="hidden">Admin</a>
         <a href="#" onclick="showSettings()">Settings</a>
         <a href="#" onclick="showConfig()">Configuration</a>
-        <a href="#">Admin</a>
         <a href="#">Chat History</a>
     </div>
 
@@ -105,164 +94,212 @@
         <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
     </div>
 
-    <div class="chat-container" id="chat-container">
+    <!-- Authentication Container -->
+    <div id="auth-container" class="auth-container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button id="login-button">Login</button>
+            <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a>.</p>
+        </div>
+        <!-- Registration Form -->
+        <div id="register-form" class="hidden">
+            <h2>Register</h2>
+            <input type="text" id="register-username" placeholder="Username">
+            <input type="password" id="register-password" placeholder="Password">
+            <button id="register-button">Register</button>
+            <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a>.</p>
+        </div>
+    </div>
+    
+    <!-- Chat Container -->
+    <div class="chat-container hidden" id="chat-container">
         <div class="chat-header">
-            <span>Chatbot</span>
+            <span id="chat-header-title">Chatbot</span>
         </div>
         <div class="chat-history" id="chat-history"></div>
         <div class="chat-input">
             <input type="text" id="chat-input-text" placeholder="Type a message...">
             <input type="file" id="media-input" accept="image/*,video/*">
             <button id="attach-button">Attach</button>
-            <button id="record-button">Record</button>
             <button id="send-button">Send</button>
         </div>
     </div>
-
-    <div id="settings-page" style="display:none;">
-        <h2>Settings</h2>
-        <form>
-            Name of Chatbot: <input type="text"><br>
-            Chatbot Task to do: <input type="text"><br>
-            End User Email Address: <input type="email"><br>
-            Supplementary Recovery Email Address: <input type="email"><br>
-            Phone Number: <input type="tel"><br>
-            Recovery Generated Key: <input type="text"><br>
-        </form>
-    </div>
-
-    <div id="config-page" style="display:none;">
-        <h2>Configuration</h2>
-        <form>
-            Confidence: <input type="range" min="0" max="1" step="0.1"><br>
-            Temperature: <input type="range" min="0" max="1" step="0.1"><br>
-            top_p: <input type="range" min="0" max="1" step="0.1"><br>
-            top_k: <input type="number" min="1"><br>
-            max_output_tokens: <input type="number" min="1"><br>
-        </form>
-    </div>
-
-
+    
     <script>
-        function openNav() {
-            document.getElementById("mySidenav").style.width = "250px";
-            document.getElementById("main").style.marginLeft = "250px";
-        }
+        // --- DOM Elements ---
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authContainer = document.getElementById('auth-container');
+        const chatContainer = document.getElementById('chat-container');
+        const loginNavLink = document.getElementById('login-nav-link');
+        const logoutNavLink = document.getElementById('logout-nav-link');
+        const adminNavLink = document.getElementById('admin-nav-link');
+        const chatHeaderTitle = document.getElementById('chat-header-title');
 
-        function closeNav() {
-            document.getElementById("mySidenav").style.width = "0";
-            document.getElementById("main").style.marginLeft = "0";
-        }
-
-        function showSettings() {
-            document.getElementById("chat-container").style.display = "none";
-            document.getElementById("config-page").style.display = "none";
-            document.getElementById("settings-page").style.display = "block";
+        // --- UI State Functions ---
+        const showLogin = () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            authContainer.classList.remove('hidden');
+            chatContainer.classList.add('hidden');
             closeNav();
+        };
+
+        const showRegister = () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        };
+
+        const showChat = (user) => {
+            authContainer.classList.add('hidden');
+            chatContainer.classList.remove('hidden');
+            loginNavLink.classList.add('hidden');
+            logoutNavLink.classList.remove('hidden');
+            adminNavLink.classList.remove('hidden'); // Show admin link on login
+            chatHeaderTitle.textContent = `Chatting as ${user.username}`;
+        };
+
+        const showLoggedOutState = () => {
+            showLogin();
+            loginNavLink.classList.remove('hidden');
+            logoutNavLink.classList.add('hidden');
+            adminNavLink.classList.add('hidden');
+            chatHeaderTitle.textContent = 'Chatbot';
+        };
+        
+        // --- Navigation ---
+        function openNav() { document.getElementById("mySidenav").style.width = "250px"; }
+        function closeNav() { document.getElementById("mySidenav").style.width = "0"; }
+
+        // --- API Communication ---
+        const api = {
+            async post(endpoint, body) {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message);
+                }
+                return response.json();
+            },
+            async get(endpoint) {
+                const response = await fetch(endpoint);
+                return response.json();
+            }
+        };
+
+        // --- Authentication Logic ---
+        document.getElementById('register-button').addEventListener('click', async () => {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            try {
+                const data = await api.post('/register', { username, password });
+                alert(data.message);
+                showLogin();
+            } catch (error) {
+                alert(`Registration failed: ${error.message}`);
+            }
+        });
+
+        document.getElementById('login-button').addEventListener('click', async () => {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                const data = await api.post('/login', { username, password });
+                alert(data.message);
+                checkSession(); // Re-check session to update UI
+            } catch (error) {
+                alert(`Login failed: ${error.message}`);
+            }
+        });
+        
+        async function logout() {
+            try {
+                await api.post('/logout');
+                showLoggedOutState();
+                closeNav();
+            } catch (error) {
+                alert(`Logout failed: ${error.message}`);
+            }
         }
 
-        function showConfig() {
-            document.getElementById("chat-container").style.display = "none";
-            document.getElementById("settings-page").style.display = "none";
-            document.getElementById("config-page").style.display = "block";
-            closeNav();
+        async function checkSession() {
+            const session = await api.get('/session');
+            if (session.loggedIn) {
+                showChat(session.user);
+            } else {
+                showLoggedOutState();
+            }
         }
 
+        // --- Chat & Upload Logic ---
         const sendButton = document.getElementById('send-button');
-        const recordButton = document.getElementById('record-button');
         const attachButton = document.getElementById('attach-button');
         const mediaInput = document.getElementById('media-input');
         const chatInput = document.getElementById('chat-input-text');
         const chatHistory = document.getElementById('chat-history');
 
-        let isRecording = false;
-        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            chatInput.value = transcript;
-        };
-
-        recordButton.addEventListener('click', () => {
-            if (isRecording) {
-                recognition.stop();
-                recordButton.textContent = 'Record';
-                isRecording = false;
-            } else {
-                recognition.start();
-                recordButton.textContent = 'Stop';
-                isRecording = true;
-            }
-        });
-
-        attachButton.addEventListener('click', () => {
-            mediaInput.click();
-        });
+        attachButton.addEventListener('click', () => mediaInput.click());
 
         sendButton.addEventListener('click', async () => {
             const message = chatInput.value;
             const mediaFile = mediaInput.files[0];
+            
+            if (!message && !mediaFile) return;
 
-            if (message) {
-                addMessage('user', message);
-                chatInput.value = '';
-            }
+            try {
+                if (message) {
+                    addMessageToUI('user', message);
+                    chatInput.value = '';
+                    const data = await api.post('/chat', { message });
+                    addMessageToUI('bot', data.message);
+                }
 
-            if (mediaFile) {
-                const formData = new FormData();
-                formData.append('media', mediaFile);
+                if (mediaFile) {
+                    const formData = new FormData();
+                    formData.append('media', mediaFile);
+                    
+                    const response = await fetch('/upload', { method: 'POST', body: formData });
+                    const data = await response.json();
 
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                addMessage('user', data.filePath, mediaFile.type.startsWith('image') ? 'image' : 'video');
-            }
+                    if (!response.ok) throw new Error(data.message);
 
-            if(message && !mediaFile) {
-                 const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
-                });
-                const data = await response.json();
-                addMessage('bot', data.message);
+                    addMessageToUI('user', `Uploaded: ${data.filePath}`, mediaFile.type.startsWith('image') ? 'image' : 'video');
+                }
+            } catch(error) {
+                alert(`Error: ${error.message}`);
+                // If the error is a 401, it means the session expired.
+                if (error.message.includes('logged in')) {
+                    checkSession(); // Re-validate session
+                }
             }
         });
 
-        function addMessage(sender, content, type = 'text') {
+        function addMessageToUI(sender, content, type = 'text') {
             const messageElement = document.createElement('div');
+            messageElement.textContent = `${sender}: `;
 
             if (type === 'text') {
-                messageElement.textContent = content;
+                messageElement.textContent += content;
             } else if (type === 'image') {
                 const image = document.createElement('img');
                 image.src = content;
                 image.style.maxWidth = '200px';
                 messageElement.appendChild(image);
-            } else if (type === 'video') {
-                const video = document.createElement('video');
-                video.src = content;
-                video.style.maxWidth = '200px';
-                video.controls = true;
-                messageElement.appendChild(video);
-            }
-
-            if (sender === 'bot') {
-                const speakButton = document.createElement('button');
-                speakButton.textContent = 'Speak';
-                speakButton.addEventListener('click', () => {
-                    const utterance = new SpeechSynthesisUtterance(content);
-                    speechSynthesis.speak(utterance);
-                });
-                messageElement.appendChild(speakButton);
             }
             chatHistory.appendChild(messageElement);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
-    </script>
 
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', checkSession);
+
+    </script>
 </body>
 </html>

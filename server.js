@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 const app = express();
 const port = 3000;
@@ -38,11 +39,37 @@ app.post('/chat', (req, res) => {
 });
 
 app.post('/upload', upload.single('media'), (req, res) => {
-    if (req.file) {
-        res.json({ message: 'File uploaded successfully!', filePath: req.file.path });
-    } else {
-        res.status(400).json({ message: 'File upload failed.' });
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
     }
+
+    const filePath = req.file.path;
+    const command = `python file_scanner.py "${filePath}"`;
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            // Exit code 2 means the file is malicious
+            if (error.code === 2) {
+                fs.unlink(filePath, (unlinkErr) => {
+                    if (unlinkErr) {
+                        console.error(`Error deleting malicious file: ${unlinkErr}`);
+                        return res.status(500).json({ message: 'Malicious file detected, but failed to delete it.' });
+                    }
+                    console.log(`Deleted malicious file: ${filePath}`);
+                    return res.status(403).json({ message: 'Malicious file detected and rejected.' });
+                });
+            } else {
+                // Other errors (e.g., script not found, python error)
+                console.error(`Scanner error: ${stderr}`);
+                fs.unlink(filePath, () => {}); // Attempt to delete the file just in case
+                return res.status(500).json({ message: 'Error scanning the file.' });
+            }
+        } else {
+            // Exit code 0 means the file is clean
+            console.log(`Scan output: ${stdout}`);
+            res.json({ message: 'File uploaded and scanned successfully!', filePath: filePath });
+        }
+    });
 });
 
 app.listen(port, () => {

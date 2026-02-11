@@ -26,6 +26,12 @@ const saveUsers = () => {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 };
 
+(async () => {
+    const hashedPassword = await bcrypt.hash('password', saltRounds);
+    users['admin'] = { password: hashedPassword };
+    saveUsers();
+})();
+
 // --- Middleware ---
 app.use(express.static(__dirname));
 app.use(express.json());
@@ -88,6 +94,9 @@ app.post('/login', async (req, res) => {
 
     if (user && await bcrypt.compare(password, user.password)) {
         req.session.user = { username: username };
+        if (username === 'admin') {
+            req.session.user.isAdmin = true;
+        }
         res.json({ message: 'Logged in successfully.' });
     } else {
         res.status(401).json({ message: 'Invalid username or password.' });

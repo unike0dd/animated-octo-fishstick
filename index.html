@@ -9,7 +9,7 @@
             font-family: sans-serif;
             transition: background-color 0.5s;
         }
-        .chat-container, .auth-container {
+        .chat-container, .auth-container, .page-container {
             position: fixed;
             bottom: 30px;
             right: 30px;
@@ -19,11 +19,11 @@
             background-color: white;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .auth-container {
+        .auth-container, .page-container {
             padding: 20px;
             z-index: 10;
         }
-        .auth-container h2 {
+        .auth-container h2, .page-container h2 {
             margin-top: 0;
         }
         .auth-container input {
@@ -84,10 +84,11 @@
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <a href="#" id="login-nav-link" onclick="showLogin()">Login</a>
         <a href="#" id="logout-nav-link" class="hidden" onclick="logout()">Logout</a>
-        <a href="#" id="admin-nav-link" class="hidden">Admin</a>
+        <a href="#" id="admin-nav-link" class="hidden" onclick="showAdmin()">Admin</a>
         <a href="#" onclick="showSettings()">Settings</a>
         <a href="#" onclick="showConfig()">Configuration</a>
         <a href="#">Chat History</a>
+        <a href="#">Chats</a>
     </div>
 
     <div id="main">
@@ -99,8 +100,8 @@
         <!-- Login Form -->
         <div id="login-form">
             <h2>Login</h2>
-            <input type="text" id="login-username" placeholder="Username">
-            <input type="password" id="login-password" placeholder="Password">
+            <input type="text" id="login-username" placeholder="Username" value="admin">
+            <input type="password" id="login-password" placeholder="Password" value="password">
             <button id="login-button">Login</button>
             <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a>.</p>
         </div>
@@ -112,6 +113,27 @@
             <button id="register-button">Register</button>
             <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a>.</p>
         </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="admin-page" class="page-container hidden">
+        <h2>Admin</h2>
+        <div>
+            <h3>Chat Management</h3>
+            <p>Here you can manage chats.</p>
+        </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="settings-page" class="page-container hidden">
+        <h2>Settings</h2>
+        <p>User settings will go here.</p>
+    </div>
+
+    <!-- Configuration Page -->
+    <div id="config-page" class="page-container hidden">
+        <h2>Configuration</h2>
+        <p>System configuration options will go here.</p>
     </div>
     
     <!-- Chat Container -->
@@ -138,6 +160,9 @@
         const logoutNavLink = document.getElementById('logout-nav-link');
         const adminNavLink = document.getElementById('admin-nav-link');
         const chatHeaderTitle = document.getElementById('chat-header-title');
+        const adminPage = document.getElementById('admin-page');
+        const settingsPage = document.getElementById('settings-page');
+        const configPage = document.getElementById('config-page');
 
         // --- UI State Functions ---
         const showLogin = () => {
@@ -145,6 +170,9 @@
             registerForm.classList.add('hidden');
             authContainer.classList.remove('hidden');
             chatContainer.classList.add('hidden');
+            adminPage.classList.add('hidden');
+            settingsPage.classList.add('hidden');
+            configPage.classList.add('hidden');
             closeNav();
         };
 
@@ -160,6 +188,9 @@
             logoutNavLink.classList.remove('hidden');
             adminNavLink.classList.remove('hidden'); // Show admin link on login
             chatHeaderTitle.textContent = `Chatting as ${user.username}`;
+            adminPage.classList.add('hidden');
+            settingsPage.classList.add('hidden');
+            configPage.classList.add('hidden');
         };
 
         const showLoggedOutState = () => {
@@ -168,6 +199,33 @@
             logoutNavLink.classList.add('hidden');
             adminNavLink.classList.add('hidden');
             chatHeaderTitle.textContent = 'Chatbot';
+        };
+
+        const showAdmin = () => {
+            adminPage.classList.remove('hidden');
+            settingsPage.classList.add('hidden');
+            configPage.classList.add('hidden');
+            authContainer.classList.add('hidden');
+            chatContainer.classList.add('hidden');
+            closeNav();
+        };
+
+        const showSettings = () => {
+            adminPage.classList.add('hidden');
+            settingsPage.classList.remove('hidden');
+            configPage.classList.add('hidden');
+            authContainer.classList.add('hidden');
+            chatContainer.classList.add('hidden');
+            closeNav();
+        };
+
+        const showConfig = () => {
+            adminPage.classList.add('hidden');
+            settingsPage.classList.add('hidden');
+            configPage.classList.remove('hidden');
+            authContainer.classList.add('hidden');
+            chatContainer.classList.add('hidden');
+            closeNav();
         };
         
         // --- Navigation ---

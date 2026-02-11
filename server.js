@@ -116,10 +116,17 @@ app.get('/session', (req, res) => {
 // --- Protected Routes ---
 app.post('/chat', isAuthenticated, (req, res) => {
     const userMessage = req.body.message;
-    // Sanitize the user message to prevent XSS
-    const sanitizedMessage = userMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const botResponse = `You said: ${sanitizedMessage}`;
-    res.json({ message: botResponse });
+    const sanitizedMessage = userMessage.replace(/"/g, '\\"');
+
+    const command = `python chatbot.py "${sanitizedMessage}"`;
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Chatbot error: ${stderr}`);
+            return res.status(500).json({ message: 'Error getting response from chatbot.' });
+        }
+        res.json({ message: stdout });
+    });
 });
 
 app.post('/upload', isAuthenticated, upload.single('media'), (req, res) => {

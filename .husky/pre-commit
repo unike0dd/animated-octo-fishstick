@@ -1,4 +1,2 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-python security_monitor.py
+/nix/store/gr0kqw545gzc5p7d6rxigg68arvf7qj5-python3-3.12.8-env/bin/python3 security_monitor.py
